@@ -1,6 +1,6 @@
 package org.apache.sparkc.util
 
-private[spark] object ClosureCleaner {
+private[sparkc] object ClosureCleaner {
   def clean(
              closure: AnyRef,
              checkSerializable: Boolean = true,

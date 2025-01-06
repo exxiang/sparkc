@@ -17,7 +17,7 @@ class SparkConf {
     set(key, value, false)
   }
 
-  private[spark] def set(key: String, value: String, silent: Boolean): SparkConf = {
+  private[sparkc] def set(key: String, value: String, silent: Boolean): SparkConf = {
     if (key == null) {
       throw new NullPointerException("null key")
     }

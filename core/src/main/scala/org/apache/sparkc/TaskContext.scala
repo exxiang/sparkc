@@ -26,12 +26,12 @@ object TaskContext {
   /**
    * Set the thread local TaskContext. Internal to Spark.
    */
-  protected[spark] def setTaskContext(tc: TaskContext): Unit = taskContext.set(tc)
+  protected[sparkc] def setTaskContext(tc: TaskContext): Unit = taskContext.set(tc)
 
   /**
    * Unset the thread local TaskContext. Internal to Spark.
    */
-  protected[spark] def unset(): Unit = taskContext.remove()
+  protected[sparkc] def unset(): Unit = taskContext.remove()
 }
 
 
@@ -103,22 +103,22 @@ abstract class TaskContext extends Serializable {
   /**
    * If the task is interrupted, throws TaskKilledException with the reason for the interrupt.
    */
-  private[spark] def killTaskIfInterrupted(): Unit
+  private[sparkc] def killTaskIfInterrupted(): Unit
 
   /**
    * If the task is interrupted, the reason this task was killed, otherwise None.
    */
-  private[spark] def getKillReason(): Option[String]
+  private[sparkc] def getKillReason(): Option[String]
 
   /** Marks the task for interruption, i.e. cancellation. */
-  private[spark] def markInterrupted(reason: String): Unit
+  private[sparkc] def markInterrupted(reason: String): Unit
 
   /** Marks the task as failed and triggers the failure listeners. */
-  private[spark] def markTaskFailed(error: Throwable): Unit
+  private[sparkc] def markTaskFailed(error: Throwable): Unit
 
   /** Marks the task as completed and triggers the completion listeners. */
-  private[spark] def markTaskCompleted(error: Option[Throwable]): Unit
+  private[sparkc] def markTaskCompleted(error: Option[Throwable]): Unit
 
   /** Gets local properties set upstream in the driver. */
-  private[spark] def getLocalProperties: Properties
+  private[sparkc] def getLocalProperties: Properties
 }

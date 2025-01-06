@@ -15,7 +15,7 @@ class SparkContext(config: SparkConf) {
   def defaultMinPartitions: Int = 2
   def hadoopConfiguration: Configuration = _hadoopConfiguration
 
-  protected[spark] val localProperties = new InheritableThreadLocal[Properties] {
+  protected[sparkc] val localProperties = new InheritableThreadLocal[Properties] {
     override def childValue(parent: Properties): Properties = {
       // Note: make a clone such that changes in the parent properties aren't reflected in
       // the those of the children threads, which has confusing semantics (SPARK-10563).
@@ -25,9 +25,9 @@ class SparkContext(config: SparkConf) {
     override protected def initialValue(): Properties = new Properties()
   }
 
-  private[spark] def withScope[U](body: => U): U = RDDOperationScope.withScope[U](this)(body)
+  private[sparkc] def withScope[U](body: => U): U = RDDOperationScope.withScope[U](this)(body)
 
-  private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
+  private[sparkc] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
     ClosureCleaner.clean(f, checkSerializable)
     f
   }
@@ -77,10 +77,10 @@ class SparkContext(config: SparkConf) {
 }
 
 object SparkContext {
-  private[spark] val SPARK_JOB_DESCRIPTION = "spark.job.description"
-  private[spark] val SPARK_JOB_GROUP_ID = "spark.jobGroup.id"
-  private[spark] val SPARK_JOB_INTERRUPT_ON_CANCEL = "spark.job.interruptOnCancel"
-  private[spark] val SPARK_SCHEDULER_POOL = "spark.scheduler.pool"
-  private[spark] val RDD_SCOPE_KEY = "spark.rdd.scope"
-  private[spark] val RDD_SCOPE_NO_OVERRIDE_KEY = "spark.rdd.scope.noOverride"
+  private[sparkc] val SPARK_JOB_DESCRIPTION = "spark.job.description"
+  private[sparkc] val SPARK_JOB_GROUP_ID = "spark.jobGroup.id"
+  private[sparkc] val SPARK_JOB_INTERRUPT_ON_CANCEL = "spark.job.interruptOnCancel"
+  private[sparkc] val SPARK_SCHEDULER_POOL = "spark.scheduler.pool"
+  private[sparkc] val RDD_SCOPE_KEY = "spark.rdd.scope"
+  private[sparkc] val RDD_SCOPE_NO_OVERRIDE_KEY = "spark.rdd.scope.noOverride"
 }

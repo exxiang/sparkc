@@ -19,12 +19,12 @@ import scala.reflect.ClassTag
  *                         sensitive, it may return totally different result when the input order
  *                         is changed. Mostly stateful functions are order-sensitive.
  */
-private[spark] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
-    var prev: RDD[T],
-    f: (TaskContext, Int, Iterator[T]) => Iterator[U],  // (TaskContext, partition index, iterator)
-    preservesPartitioning: Boolean = false,
-    isFromBarrier: Boolean = false,
-    isOrderSensitive: Boolean = false)
+private[sparkc] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
+                                                                  var prev: RDD[T],
+                                                                  f: (TaskContext, Int, Iterator[T]) => Iterator[U],  // (TaskContext, partition index, iterator)
+                                                                  preservesPartitioning: Boolean = false,
+                                                                  isFromBarrier: Boolean = false,
+                                                                  isOrderSensitive: Boolean = false)
   extends RDD[U](prev) {
 
 

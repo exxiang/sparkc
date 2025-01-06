@@ -17,29 +17,13 @@
 
 package org.apache.sparkc.rdd
 
-import org.apache.hadoop.conf.{Configurable, Configuration}
-import org.apache.hadoop.io.compress.CompressionCodecFactory
+import org.apache.hadoop.conf.{Configurable}
 import org.apache.hadoop.mapred._
-import org.apache.hadoop.mapred.lib.CombineFileSplit
 import org.apache.hadoop.mapreduce.TaskType
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.util.ReflectionUtils
 import org.apache.sparkc.SparkContext
 
-import java.io.{FileNotFoundException, IOException}
-import java.text.SimpleDateFormat
-import java.util.{Date, Locale}
-import scala.reflect.ClassTag
-
-/**
- * A Spark split class that wraps around a Hadoop InputSplit.
- */
-private[spark] class HadoopPartition(rddId: Int,  val index: Int, s: InputSplit) {
-
-  override def hashCode(): Int = 31 * (31 + rddId) + index
-
-  override def equals(other: Any): Boolean = super.equals(other)
-}
+import java.util.Date
 
 /**
  * :: DeveloperApi ::
@@ -102,29 +86,5 @@ class HadoopRDD[K, V](
       case _ =>
     }
     newInputFormat
-  }
-}
-
-private[spark] object HadoopRDD {
-  /**
-   * Configuration's constructor is not threadsafe (see SPARK-1097 and HADOOP-10456).
-   * Therefore, we synchronize on this lock before calling new JobConf() or new Configuration().
-   */
-  val CONFIGURATION_INSTANTIATION_LOCK = new Object()
-
-  /** Update the input bytes read metric each time this number of records has been read */
-  val RECORDS_BETWEEN_BYTES_READ_METRIC_UPDATES = 256
-
-  /** Add Hadoop configuration specific to a single partition and attempt. */
-  def addLocalConfiguration(jobTrackerId: String, jobId: Int, splitId: Int, attemptId: Int,
-                            conf: JobConf): Unit = {
-    val jobID = new JobID(jobTrackerId, jobId)
-    val taId = new TaskAttemptID(new TaskID(jobID, TaskType.MAP, splitId), attemptId)
-
-    conf.set("mapreduce.task.id", taId.getTaskID.toString)
-    conf.set("mapreduce.task.attempt.id", taId.toString)
-    conf.setBoolean("mapreduce.task.ismap", true)
-    conf.setInt("mapreduce.task.partition", splitId)
-    conf.set("mapreduce.job.id", jobID.toString)
   }
 }
