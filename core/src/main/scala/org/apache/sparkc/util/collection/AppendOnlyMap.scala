@@ -17,6 +17,8 @@
 
 package org.apache.sparkc.util.collection
 
+import com.google.common.hash.Hashing
+
 import java.util.Comparator
 
 /**

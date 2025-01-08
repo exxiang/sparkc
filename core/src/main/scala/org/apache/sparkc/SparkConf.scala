@@ -1,9 +1,25 @@
 package org.apache.sparkc
 
-import java.util.concurrent.ConcurrentHashMap
+import org.apache.sparkc.util.Utils
 
-class SparkConf {
+import java.util.{Map => JMap}
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConverters.asScalaSetConverter
+
+class SparkConf(loadDefaults: Boolean) {
   private val settings = new ConcurrentHashMap[String, String]()
+
+  if (loadDefaults) {
+    loadFromSystemProperties(false)
+  }
+
+  private[sparkc] def loadFromSystemProperties(silent: Boolean): SparkConf = {
+    // Load any spark.* system properties
+    for ((key, value) <- Utils.getSystemProperties if key.startsWith("spark.")) {
+      set(key, value, silent)
+    }
+    this
+  }
 
   def setMaster(master: String): SparkConf = {
     set("spark.master", master)
@@ -26,5 +42,29 @@ class SparkConf {
     }
     settings.put(key, value)
     this
+  }
+
+  def getAll: Array[(String, String)] = {
+    settings.entrySet().asScala.map(x => (x.getKey, x.getValue)).toArray
+  }
+
+  def getOption(key: String): Option[String] = {
+    Option(settings.get(key)).orElse(getDeprecatedConfig(key, settings))
+  }
+
+  private val configsWithAlternatives = Map[String, Seq[AlternateConfig]]()
+
+  private case class AlternateConfig(
+                                      key: String,
+                                      version: String,
+                                      translation: String => String = null)
+
+  def getDeprecatedConfig(key: String, conf: JMap[String, String]): Option[String] = {
+    configsWithAlternatives.get(key).flatMap { alts =>
+      alts.collectFirst { case alt if conf.containsKey(alt.key) =>
+        val value = conf.get(alt.key)
+        if (alt.translation != null) alt.translation(value) else value
+      }
+    }
   }
 }

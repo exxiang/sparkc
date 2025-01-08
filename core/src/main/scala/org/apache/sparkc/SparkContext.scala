@@ -4,16 +4,27 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.{FileInputFormat, InputFormat, JobConf, TextInputFormat}
+import org.apache.sparkc.deploy.SparkHadoopUtil
 import org.apache.sparkc.rdd.{HadoopRDD, RDD, RDDOperationScope}
 import org.apache.sparkc.util.{ClosureCleaner, Utils}
 
 import java.util.Properties
+import scala.util.control.NonFatal
 
 class SparkContext(config: SparkConf) {
   private var _hadoopConfiguration: Configuration = _
+  private var _conf: SparkConf = _
 
   def defaultMinPartitions: Int = 2
   def hadoopConfiguration: Configuration = _hadoopConfiguration
+
+  try {
+    _conf = config
+    _hadoopConfiguration = SparkHadoopUtil.get.newConfiguration(_conf)
+  } catch {
+    case NonFatal(e) =>
+
+  }
 
   protected[sparkc] val localProperties = new InheritableThreadLocal[Properties] {
     override def childValue(parent: Properties): Properties = {

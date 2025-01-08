@@ -7,11 +7,6 @@
         <parameter value="D:\Users\erxia\IdeaProjects\sparkc\core\target/.scala_dependencies" />
       </parameters>
     </profile>
-    <profile name="Maven 2" modules="sparkc-core_2.13">
-      <parameters>
-        <parameter value="-dependencyfile" />
-        <parameter value="D:\IdeaProjects\sparkc\core\target/.scala_dependencies" />
-      </parameters>
-    </profile>
+    <profile name="Maven 2" modules="sparkc-core_2.13" />
   </component>
 </project>
