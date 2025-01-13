@@ -1,4 +1,4 @@
-package examples
+package sparkc.examples
 
 import org.apache.sparkc.{SparkConf, SparkContext}
 

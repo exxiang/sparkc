@@ -7,6 +7,9 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConverters.asScalaSetConverter
 
 class SparkConf(loadDefaults: Boolean) {
+
+  def this() = this(true)
+
   private val settings = new ConcurrentHashMap[String, String]()
 
   if (loadDefaults) {

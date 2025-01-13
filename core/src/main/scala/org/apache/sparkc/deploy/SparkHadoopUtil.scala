@@ -27,13 +27,12 @@ import org.apache.hadoop.security.{Credentials, UserGroupInformation}
 import org.apache.sparkc.SparkConf
 import org.apache.sparkc.util.Utils
 
-import java.io.{FileSystem, _}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream, IOException}
 import java.net.InetAddress
 import java.security.PrivilegedExceptionAction
 import java.text.DateFormat
 import java.util.{Arrays, Date, Locale}
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.collection.mutable.HashMap
 import scala.util.control.NonFatal
 

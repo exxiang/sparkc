@@ -39,11 +39,11 @@ abstract class RDD[T: ClassTag](
   }
 
   def foreach(f: T => Unit): Unit = withScope {
-    runJob(this)
+    val cleanF = sc.clean(f)
+    runJob(this, (iter: Iterator[T]) => iter.foreach(cleanF))
   }
 
-  def runJob[T, U: ClassTag](
-                              rdd: RDD[T]): Array[U] = {
+  def runJob[T, U: ClassTag](rdd: RDD[T], func: Iterator[T] => U): Array[U] = {
     val results = new Array[U](1)
     results
   }
