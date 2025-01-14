@@ -1,6 +1,6 @@
 package org.apache.sparkc.rdd
 
-import org.apache.sparkc.{Dependency, OneToOneDependency, SparkContext, TaskContext}
+import org.apache.sparkc.{Dependency, OneToOneDependency, Partition, SparkContext, TaskContext}
 
 import scala.reflect.ClassTag
 
@@ -38,15 +38,59 @@ abstract class RDD[T: ClassTag](
     this
   }
 
+  protected[sparkc] def firstParent[U: ClassTag]: RDD[U] = {
+    dependencies.head.rdd.asInstanceOf[RDD[U]]
+  }
+
+  /** Returns the jth parent RDD: e.g. rdd.parent[T](0) is equivalent to rdd.firstParent[T] */
+  protected[sparkc] def parent[U: ClassTag](j: Int): RDD[U] = {
+    dependencies(j).rdd.asInstanceOf[RDD[U]]
+  }
+
+  protected def getDependencies: Seq[Dependency[_]] = deps
+
+  @volatile private var dependencies_ : Seq[Dependency[_]] = _
+
+  final def dependencies: Seq[Dependency[_]] = {
+      dependencies_ = getDependencies
+      dependencies_
+  }
+
   def foreach(f: T => Unit): Unit = withScope {
     val cleanF = sc.clean(f)
     runJob(this, (iter: Iterator[T]) => iter.foreach(cleanF))
   }
 
+  protected def clearDependencies(): Unit = {
+    dependencies_ = null
+  }
+
   def runJob[T, U: ClassTag](rdd: RDD[T], func: Iterator[T] => U): Array[U] = {
+    val split = new Partition {
+      /**
+       * Get the partition's index within its parent RDD
+       */
+      override def index: Int = 0
+    }
+    val firstRdd = dependencies.head.rdd.asInstanceOf[RDD[U]]
+    val taskContext = TaskContext.get()
+    firstRdd.compute(split, TaskContext.get())
+//    while (firstRdd.deps != null) {
+//      val rdd = firstRdd.deps
+//    }
     val results = new Array[U](1)
     results
   }
+
+  final def iterator(split: Partition, context: TaskContext): Iterator[T] = {
+    computeOrReadCheckpoint(split, context)
+  }
+
+  private[sparkc] def computeOrReadCheckpoint(split: Partition, context: TaskContext): Iterator[T] = {
+    compute(split, context)
+  }
+
+  def compute(split: Partition, context: TaskContext): Iterator[T]
 }
 
 object RDD {

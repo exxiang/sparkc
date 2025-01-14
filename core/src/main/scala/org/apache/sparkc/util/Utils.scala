@@ -1,8 +1,10 @@
 package org.apache.sparkc.util
 
+import java.io.IOException
 import java.util.Properties
 import scala.collection.JavaConverters.asScalaSetConverter
 import scala.collection.Map
+import scala.util.control.NonFatal
 
 private[sparkc] object Utils {
   def getCurrentUserName(): String = {
@@ -19,6 +21,16 @@ private[sparkc] object Utils {
     resultProps
   }
 
+  def tryOrIOException[T](block: => T): T = {
+    try {
+      block
+    } catch {
+      case e: IOException =>
+        throw e
+      case NonFatal(e) =>
+        throw new IOException(e)
+    }
+  }
   def nonNegativeMod(x: Int, mod: Int): Int = {
     val rawMod = x % mod
     rawMod + (if (rawMod < 0) mod else 0)

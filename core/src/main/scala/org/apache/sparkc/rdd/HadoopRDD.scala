@@ -17,12 +17,13 @@
 
 package org.apache.sparkc.rdd
 
-import org.apache.hadoop.conf.{Configurable}
+import org.apache.hadoop.conf.Configurable
 import org.apache.hadoop.mapred._
-import org.apache.hadoop.mapreduce.TaskType
 import org.apache.hadoop.util.ReflectionUtils
-import org.apache.sparkc.SparkContext
+import org.apache.sparkc.util.NextIterator
+import org.apache.sparkc.{InterruptibleIterator, Partition, SparkContext, TaskContext}
 
+import java.io.{FileNotFoundException, IOException}
 import java.util.Date
 
 /**
@@ -59,6 +60,8 @@ class HadoopRDD[K, V](
 
   def sparkContext: SparkContext = sc
 
+  protected var finished = false
+
   def this(
       sc: SparkContext,
       conf: JobConf,
@@ -86,5 +89,54 @@ class HadoopRDD[K, V](
       case _ =>
     }
     newInputFormat
+  }
+
+  override def compute(theSplit: Partition, context: TaskContext): InterruptibleIterator[(K, V)] = {
+    val iter = new NextIterator[(K, V)] {
+
+      private val split = theSplit.asInstanceOf[HadoopPartition]
+      private val jobConf = new JobConf()
+      private var reader: RecordReader[K, V] = null
+      private val inputFormat = getInputFormat(jobConf)
+      reader =
+        try {
+          inputFormat.getRecordReader(split.inputSplit.value, jobConf, Reporter.NULL)
+        } catch {
+          case e: FileNotFoundException =>
+            finished = true
+            null
+        }
+
+      private val key: K = if (reader == null) null.asInstanceOf[K] else reader.createKey()
+      private val value: V = if (reader == null) null.asInstanceOf[V] else reader.createValue()
+
+      override def getNext(): (K, V) = {
+        try {
+          finished = !reader.next(key, value)
+        } catch {
+          case e: FileNotFoundException =>
+            finished = true
+          // Throw FileNotFoundException even if `ignoreCorruptFiles` is true
+          case e: FileNotFoundException => throw e
+          case e: IOException =>
+            finished = true
+        }
+        (key, value)
+      }
+
+      override def close(): Unit = {
+        if (reader != null) {
+          try {
+            reader.close()
+          } catch {
+            case e: Exception =>
+
+          } finally {
+            reader = null
+          }
+        }
+      }
+    }
+    new InterruptibleIterator[(K, V)](context, iter)
   }
 }

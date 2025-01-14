@@ -17,7 +17,7 @@
 
 package org.apache.sparkc.rdd
 
-import org.apache.sparkc.{Aggregator, Dependency, Partitioner}
+import org.apache.sparkc.{Aggregator, Dependency, Partition, Partitioner, TaskContext}
 import org.apache.sparkc.serializer.Serializer
 
 import scala.reflect.ClassTag
@@ -50,6 +50,10 @@ class ShuffledRDD[K: ClassTag, V: ClassTag, C: ClassTag](
   def setSerializer(serializer: Serializer): ShuffledRDD[K, V, C] = {
     this.userSpecifiedSerializer = Option(serializer)
     this
+  }
+
+  override def compute(split: Partition, context: TaskContext): Iterator[(K, C)] = {
+    null
   }
 
   /** Set key ordering for RDD's shuffle. */

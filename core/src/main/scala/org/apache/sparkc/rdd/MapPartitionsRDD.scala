@@ -1,6 +1,6 @@
 package org.apache.sparkc.rdd
 
-import org.apache.sparkc.TaskContext
+import org.apache.sparkc.{Partition, TaskContext}
 
 import scala.reflect.ClassTag
 
@@ -27,5 +27,11 @@ private[sparkc] class MapPartitionsRDD[U: ClassTag, T: ClassTag](
                                                                   isOrderSensitive: Boolean = false)
   extends RDD[U](prev) {
 
+  override def compute(split: Partition, context: TaskContext): Iterator[U] =
+    f(context, split.index, firstParent[T].iterator(split, context))
 
+  override def clearDependencies(): Unit = {
+    super.clearDependencies()
+    prev = null
+  }
 }
